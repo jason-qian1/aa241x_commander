@@ -91,3 +91,36 @@ The control node subscribes to the following information:
      + the data fields: `position`, `velocity`, `acceleration_or_force`, `yaw`, and `yaw_rate`.  These fields contain the respective information for the command to send to PX4.  **Note:** if you set data to the `velocity` fields, but the `type_mask` bitfield specifies to ignore the `velocity` fields, PX4 will ignore the fields, regardless of the data contained within the field.
 
 
+## Offboard Control ##
+
+For more detail on PX4's definition of offboard, etc, check out the [PX4 documentation explaining offboard mode](https://docs.px4.io/en/flight_modes/offboard.html)
+
+### Configuring the Pixhawk ###
+
+There are 2 required steps to configure the Pixhawk to enable the use of `OFFBOARD` mode.
+
+ 1. [Enable a switch to toggle into `OFFBOARD` mode](enable-offboard).
+ 2. [Enable the mavlink telemetry link over the `telem2` connection for a companion computer](enable-companion-link).
+
+#### Enable OFFBOARD ####
+
+Make sure that `OFFBOARD` control is possibly by mapping an RC switch to the `OFFBOARD` mode.  This can be done in one of two ways:
+
+ - **Option 1:** setting `OFFBOARD` to the third position of your already configured mode switch.  In the *radio configuration* setting page, select `OFFBOARD` for the control level of the last position switch.
+ - **Option 2:** enable another switch on the remote control and use that new switch to toggle `OFFBOARD` mode.  There are guides online that help explain how to use the Taranis radio to enable another switch.
+
+
+#### Enable Companion Link ####
+
+To enable the companion link, go to the full parameters list and select the *system* tab.  In the *system* set of parameters, you should see a `SYS_COMPANION` parameter (you can also use the search feature on the parameters page to find this parameter).  Set the `SYS_COMPANION` parameter to `921600` (may be called `companion (921600)`).
+
+This will now enable a [mavlink](https://mavlink.io/en/) connection over the `telem2` port, which is where we will be connecting the USB to Serial connector.  To validate this connection, plug in the non-USB end of the connector into the `telem2` port and plug in the USB end to the raspberry Pi 3B+.  You should now see a new device called `/dev/ttyUSB0` (use the command `ls /dev/tty*` in the terminal to see the list of devices) from the Raspberry Pi 3B+.
+
+For a final confirmation that everything is working, you can run the following `aa241x_mission` launch file for [connecting to the pixhawk](https://github.com/aa241x/aa241x_mission#communicating-with-px4):
+
+```sh
+cd ~/catkin_ws/
+source devel/setup.bash
+roslaunch aa241x_mission mavros_pixhawk.launch
+```
+
