@@ -272,44 +272,43 @@ int ControlNode::run() {
 
 		// at this point the pixhawk is in offboard control, so we can now fly
 		// the drone as desired
-				
+		
 		// set the first waypoint
 		if (_wp_index < 0) {
-			_wp_index = 0;
+			// _wp_index = 0;
 			_target_alt = _flight_alt;
+			// TODO: populate the control elements desired
+			//
+			// in this case, just asking the pixhawk to takeoff to the _target_alt
+			// height
+			pos.x = 0;
+			pos.y = 0;
+			pos.z = _target_alt;
+
+			// publish the command
+			cmd.header.stamp = ros::Time::now();
+			cmd.position = pos;
+			cmd.velocity = vel;
+			_cmd_pub.publish(cmd);
+
+			// remember need to always call spin once for the callbacks to trigger
+			ros::spinOnce();
+			rate.sleep();
+			
+			// Change the waypoint index
+			_wp_index = 1;
 		}
-
-		// TODO: populate the control elements desired
-		//
-		// in this case, just asking the pixhawk to takeoff to the _target_alt
-		// height
-		pos.x = 0;
-		pos.y = 0;
-		pos.z = _target_alt;
-
-		// publish the command
-		cmd.header.stamp = ros::Time::now();
-		cmd.position = pos;
-		cmd.velocity = vel;
-		_cmd_pub.publish(cmd);
-
-		// remember need to always call spin once for the callbacks to trigger
-		ros::spinOnce();
-		rate.sleep();
-		
-
-		// Line following
-		cmd.type_mask = 2499;
-		// 2048: Ignore YAW RATE
-		//  256: Ignore AFZ
-		//  128: Ignore AFY
-		//   64: Ignore AFX
-		//    2: Ignore Y
-		//    1: Ignore X
-		// ----
-		// 2499
-		
-		while (true) {
+		else if (_wp_index == 1) {
+			// Line following
+			cmd.type_mask = 2499;
+			// 2048: Ignore YAW RATE
+			//  256: Ignore AFZ
+			//  128: Ignore AFY
+			//   64: Ignore AFX
+			//    2: Ignore Y
+			//    1: Ignore X
+			// ----
+			// 2499
 			
 			float d = _Acoef * pos.x + _Bcoef * pos.y + _Ccoef
 			if d > abs(_Vsat){
@@ -317,12 +316,12 @@ int ControlNode::run() {
 			}
 			
 			// Normal to line velocity
-			Vnx = -d*_vec1
-			Vny =  d*_vec0
+			Vnx = -d * _vec1
+			Vny =  d * _vec0
 			
 			// Tangent to line velocity
-			Vtx = _Vlong*_vec0
-			Vty = _Vlong*_vec1
+			Vtx = _Vlong * _vec0
+			Vty = _Vlong * _vec1
 			
 			
 			vel.x = Vnx + Vtx
@@ -336,7 +335,7 @@ int ControlNode::run() {
 			_cmd_pub.publish(cmd);
 			ros::spinOnce();
 		}
-		
+
 		rate.sleep();
 		
 	}
