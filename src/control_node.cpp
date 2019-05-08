@@ -62,9 +62,9 @@ private:
 	float _n_start = 30.0f;
 	float _vec0    = 0.707f;
 	float _vec1    = 0.707f;
-	float _Acoef   = _vec1
-	float _Bcoef   = -_vec0
-	float _Ccoef   = _vec0*_n_start - _vec1*_e_start
+	float _Acoef   = _vec1;
+	float _Bcoef   = -_vec0;
+	float _Ccoef   = _vec0*_n_start - _vec1*_e_start;
 	float _Vlat    = 6.0f;
 	float _Vlong   = 12.0f;
 	
@@ -310,22 +310,22 @@ int ControlNode::run() {
 			// ----
 			// 2499
 			
-			float d = _Acoef * pos.x + _Bcoef * pos.y + _Ccoef
-			if d > abs(_Vsat){
-				d = d/abs(d)*Vsat
+			float d = _Acoef * pos.x + _Bcoef * pos.y + _Ccoef;
+			if (d > abs(_Vlat)) {
+				d = d/abs(d)*_Vlat;
 			}
 			
 			// Normal to line velocity
-			Vnx = -d * _vec1
-			Vny =  d * _vec0
+			float Vnx = -d * _vec1;
+			float Vny =  d * _vec0;
 			
 			// Tangent to line velocity
-			Vtx = _Vlong * _vec0
-			Vty = _Vlong * _vec1
+			float Vtx = _Vlong * _vec0;
+			float Vty = _Vlong * _vec1;
 			
 			
-			vel.x = Vnx + Vtx
-			vel.y = Vny + Vty
+			vel.x = Vnx + Vtx;
+			vel.y = Vny + Vty;
 			pos.z = _target_alt;
 			
 			// publish the command
