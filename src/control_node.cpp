@@ -57,6 +57,17 @@ private:
 	float _n_offset = 0.0f;
 	float _u_offset = 0.0f;
 
+	// Line generator
+	float _e_start = -10.0f;
+	float _n_start = 30.0f;
+	float _vec0    = 0.707;
+	float _vec1    = 0.707;
+	float _Acoef   = _vec1
+	float _Bcoef   = -_vec0
+	float _Ccoef   = _vec0*_n_start - _vec1*_e_start
+	float _Vlat    = 6.0f;
+	float _Vlong   = 12.0f;
+	
 	// subscribers
 	ros::Subscriber _state_sub;			// the current state of the pixhawk
 	ros::Subscriber _local_pos_sub;		// local position information
@@ -261,7 +272,7 @@ int ControlNode::run() {
 
 		// at this point the pixhawk is in offboard control, so we can now fly
 		// the drone as desired
-
+				
 		// set the first waypoint
 		if (_wp_index < 0) {
 			_wp_index = 0;
@@ -285,6 +296,49 @@ int ControlNode::run() {
 		// remember need to always call spin once for the callbacks to trigger
 		ros::spinOnce();
 		rate.sleep();
+		
+
+		// Line following
+		cmd.type_mask = 2499;
+		// 2048: Ignore YAW RATE
+		//  256: Ignore AFZ
+		//  128: Ignore AFY
+		//   64: Ignore AFX
+		//    2: Ignore Y
+		//    1: Ignore X
+		// ----
+		// 2499
+		
+		while (true) {
+			
+			float d = _Acoef * pos.x + _Bcoef * pos.y + _Ccoef
+			if d > abs(_Vsat){
+				d = d/abs(d)*Vsat
+			}
+			
+			// Normal to line velocity
+			Vnx = -d*_vec1
+			Vny =  d*_vec0
+			
+			// Tangent to line velocity
+			Vtx = _Vlong*_vec0
+			Vty = _Vlong*_vec1
+			
+			
+			vel.x = Vnx + Vtx
+			vel.y = Vny + Vty
+			pos.z = _target_alt;
+			
+			// publish the command
+			cmd.header.stamp = ros::Time::now();
+			cmd.position = pos;
+			cmd.velocity = vel;
+			_cmd_pub.publish(cmd);
+			ros::spinOnce();
+		}
+		
+		rate.sleep();
+		
 	}
 
 	// return  exit code
