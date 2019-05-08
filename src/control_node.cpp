@@ -310,8 +310,8 @@ int ControlNode::run() {
 			// ----
 			// 2499
 			
-			float d = _Acoef * pos.x + _Bcoef * pos.y + _Ccoef;
-			if (d > abs(_Vlat)) {
+			float d = _Acoef * _current_local_pos.pose.position.x + _Bcoef * _current_local_pos.pose.position.y + _Ccoef;
+			if ( abs(d) > _Vlat ) {
 				d = d/abs(d)*_Vlat;
 			}
 			
@@ -334,9 +334,10 @@ int ControlNode::run() {
 			cmd.velocity = vel;
 			_cmd_pub.publish(cmd);
 			ros::spinOnce();
+			rate.sleep();
+
 		}
 
-		rate.sleep();
 		
 	}
 
