@@ -60,8 +60,8 @@ private:
 	// Line generator
 	float _e_start = -10.0f;
 	float _n_start = 30.0f;
-	float _vec0    = 0.707;
-	float _vec1    = 0.707;
+	float _vec0    = 0.707f;
+	float _vec1    = 0.707f;
 	float _Acoef   = _vec1
 	float _Bcoef   = -_vec0
 	float _Ccoef   = _vec0*_n_start - _vec1*_e_start
